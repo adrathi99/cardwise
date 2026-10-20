@@ -1,0 +1,23 @@
+{
+  "name": "cardwise",
+  "private": true,
+  "version": "0.1.0",
+  "description": "CARDWISE — India's credit card benefits optimization platform",
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,web -c blue,green \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:server": "npm --workspace server run dev",
+    "dev:web": "npm --workspace web run dev",
+    "build": "npm --workspace web run build",
+    "seed": "npm --workspace server run seed",
+    "sample": "npm --workspace server run sample",
+    "test": "npm --workspace server run test",
+    "typecheck": "npm --workspace server run typecheck && npm --workspace web run typecheck"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

@@ -1,0 +1,23 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+web/dist/
+server/dist/
+
+# local database + uploaded data (sensitive)
+server/data/
+*.sqlite
+*.sqlite-journal
+*.db
+
+# env
+.env
+.env.local
+
+# logs / os
+*.log
+*.pid
+.DS_Store
+Thumbs.db
