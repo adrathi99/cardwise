@@ -8,9 +8,10 @@
     "start": "tsx src/index.ts",
     "seed": "tsx src/scripts/seed.ts",
     "import:cardadvisor": "tsx src/scripts/importCardAdvisor.ts",
+    "enrich:cardadvisor": "tsx src/scripts/enrichCardAdvisor.ts",
     "sample": "tsx src/scripts/makeSample.ts",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test src/lib/periods.test.ts src/lib/money.test.ts src/benefits/engine.test.ts src/parsing/statementParser.test.ts src/normalize/normalize.test.ts"
+    "test": "node --import tsx --test src/lib/periods.test.ts src/lib/money.test.ts src/benefits/engine.test.ts src/parsing/statementParser.test.ts src/normalize/normalize.test.ts src/sources/import.test.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",

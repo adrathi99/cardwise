@@ -1,4 +1,4 @@
-import { db, get, insert } from '../db.ts';
+import { db, all, get, insert } from '../db.ts';
 import { SEED_CARDS, SEED_SOURCES } from './cards.ts';
 import { DEFAULT_RULES } from '../categorize/categorizer.ts';
 
@@ -122,10 +122,10 @@ export function seedCatalog(): { cards: number; benefits: number } {
 }
 
 export function seedMerchantRules(): number {
-  const count = get<{ c: number }>('SELECT COUNT(*) AS c FROM merchant_rules')?.c ?? 0;
-  if (count > 0) return 0;
+  const existing = new Set(all<{ pattern: string }>('SELECT pattern FROM merchant_rules').map((r) => r.pattern));
   let n = 0;
   for (const r of DEFAULT_RULES) {
+    if (existing.has(r.pattern)) continue;
     insert('INSERT INTO merchant_rules (pattern, match_type, category, priority) VALUES (?,?,?,?)', r.pattern, 'substring', r.category, r.priority);
     n++;
   }

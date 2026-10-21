@@ -55,19 +55,19 @@ export function TransactionsView({ version, cards, onChange }: { version: number
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h1 className="text-[20px] font-semibold tracking-tight text-slate-900">Transactions</h1>
-          <p className="text-[13px] text-slate-500">
+          <h1 className="text-[20px] font-semibold tracking-tight text-slate-100">Transactions</h1>
+          <p className="text-[13px] text-slate-400">
             {rows.length} shown · purchases {inr(totals.spend, { decimals: 0 })} · credits {inr(totals.credits, { decimals: 0 })}
           </p>
         </div>
       </div>
 
       <Panel padded={false}>
-        <div className="flex flex-wrap gap-2 border-b border-ink-100 p-3">
+        <div className="flex flex-wrap gap-2 border-b border-slate-800 p-3">
           <select
             value={cardId}
             onChange={(e) => setCardId(e.target.value)}
-            className="rounded-lg border border-ink-200 bg-white px-2.5 py-1.5 text-[12.5px] outline-none focus:border-emerald-400"
+            className="rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 text-[12.5px] outline-none focus:border-emerald-500"
           >
             <option value="">All cards</option>
             {cards.map((c) => (
@@ -79,7 +79,7 @@ export function TransactionsView({ version, cards, onChange }: { version: number
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="rounded-lg border border-ink-200 bg-white px-2.5 py-1.5 text-[12.5px] outline-none focus:border-emerald-400"
+            className="rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 text-[12.5px] outline-none focus:border-emerald-500"
           >
             <option value="">All categories</option>
             {(meta.data?.categories ?? []).map((c) => (
@@ -91,7 +91,7 @@ export function TransactionsView({ version, cards, onChange }: { version: number
           <select
             value={month}
             onChange={(e) => setMonth(e.target.value)}
-            className="rounded-lg border border-ink-200 bg-white px-2.5 py-1.5 text-[12.5px] outline-none focus:border-emerald-400"
+            className="rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 text-[12.5px] outline-none focus:border-emerald-500"
           >
             <option value="">All months</option>
             {months.map((m) => (
@@ -103,7 +103,7 @@ export function TransactionsView({ version, cards, onChange }: { version: number
           <select
             value={eligible}
             onChange={(e) => setEligible(e.target.value)}
-            className="rounded-lg border border-ink-200 bg-white px-2.5 py-1.5 text-[12.5px] outline-none focus:border-emerald-400"
+            className="rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 text-[12.5px] outline-none focus:border-emerald-500"
           >
             <option value="">All</option>
             <option value="true">Purchases only</option>
@@ -113,7 +113,7 @@ export function TransactionsView({ version, cards, onChange }: { version: number
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search merchant…"
-            className="min-w-[180px] flex-1 rounded-lg border border-ink-200 px-3 py-1.5 text-[12.5px] outline-none focus:border-emerald-400"
+            className="min-w-[180px] flex-1 rounded-lg border border-slate-800 px-3 py-1.5 text-[12.5px] outline-none focus:border-emerald-500"
           />
         </div>
 
@@ -130,7 +130,7 @@ export function TransactionsView({ version, cards, onChange }: { version: number
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-[12.5px]">
-              <thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500">
+              <thead className="bg-slate-800/50 text-[11px] uppercase tracking-wide text-slate-400">
                 <tr>
                   <th className="whitespace-nowrap px-4 py-2.5 font-medium">Date</th>
                   <th className="px-4 py-2.5 font-medium">Merchant / description</th>
@@ -143,10 +143,10 @@ export function TransactionsView({ version, cards, onChange }: { version: number
               </thead>
               <tbody>
                 {rows.map((t) => (
-                  <tr key={t.id} className="border-t border-ink-100 hover:bg-slate-50/60">
-                    <td className="whitespace-nowrap px-4 py-2 tabnum text-slate-500">{shortDate(t.txnDate)}</td>
+                  <tr key={t.id} className="border-t border-slate-800 hover:bg-slate-800/40">
+                    <td className="whitespace-nowrap px-4 py-2 tabnum text-slate-400">{shortDate(t.txnDate)}</td>
                     <td className="max-w-[320px] px-4 py-2">
-                      <div className="truncate font-medium text-slate-800">{t.merchant}</div>
+                      <div className="truncate font-medium text-slate-200">{t.merchant}</div>
                       <div className="truncate text-[11.5px] text-slate-400" title={t.description}>
                         {t.description}
                       </div>
@@ -156,14 +156,14 @@ export function TransactionsView({ version, cards, onChange }: { version: number
                         {labels[t.category] ?? titleCase(t.category)}
                       </Pill>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-2 text-slate-500">{t.cardNickname || t.cardName}</td>
+                    <td className="whitespace-nowrap px-4 py-2 text-slate-400">{t.cardNickname || t.cardName}</td>
                     <td className="px-4 py-2">
                       {t.eligibleFor.length === 0 ? (
                         <span className="text-slate-300">—</span>
                       ) : (
                         <div className="flex flex-wrap gap-1">
                           {t.eligibleFor.slice(0, 2).map((e, i) => (
-                            <span key={i} className="rounded bg-emerald-50 px-1.5 py-0.5 text-[10.5px] text-emerald-700" title={e}>
+                            <span key={i} className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10.5px] text-emerald-300" title={e}>
                               {e.length > 24 ? e.slice(0, 22) + '…' : e}
                             </span>
                           ))}
@@ -171,12 +171,12 @@ export function TransactionsView({ version, cards, onChange }: { version: number
                         </div>
                       )}
                     </td>
-                    <td className={`whitespace-nowrap px-4 py-2 text-right tabnum font-medium ${t.direction === 'credit' ? 'text-emerald-600' : 'text-slate-800'}`}>
+                    <td className={`whitespace-nowrap px-4 py-2 text-right tabnum font-medium ${t.direction === 'credit' ? 'text-emerald-400' : 'text-slate-200'}`}>
                       {t.direction === 'credit' ? '+' : '−'}
                       {inr(t.amount)}
                     </td>
                     <td className="px-2 py-2 text-right">
-                      <button onClick={() => setEdit(t)} className="rounded p-1 text-slate-400 hover:bg-white hover:text-slate-700" title="Edit">
+                      <button onClick={() => setEdit(t)} className="rounded p-1 text-slate-400 hover:bg-slate-800 hover:text-slate-200" title="Edit">
                         ✎
                       </button>
                     </td>
@@ -228,19 +228,19 @@ function EditTxnModal({
 
   return (
     <Modal open={!!txn} onClose={onClose} title="Recategorise transaction">
-      <div className="mb-3 rounded-lg bg-slate-50 px-3 py-2 text-[12.5px] text-slate-600">
-        <div className="font-medium text-slate-800">{txn?.description}</div>
-        <div className="mt-0.5 tabnum text-slate-500">
+      <div className="mb-3 rounded-lg bg-slate-800/50 px-3 py-2 text-[12.5px] text-slate-300">
+        <div className="font-medium text-slate-200">{txn?.description}</div>
+        <div className="mt-0.5 tabnum text-slate-400">
           {shortDate(txn?.txnDate ?? '')} · {inr(txn?.amount ?? 0)} {txn?.direction}
         </div>
       </div>
       <div className="space-y-3">
-        <label className="block text-[12px] font-medium text-slate-600">
+        <label className="block text-[12px] font-medium text-slate-300">
           Category
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-[13px] font-normal outline-none focus:border-emerald-400"
+            className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-[13px] font-normal outline-none focus:border-emerald-500"
           >
             {categories.map((c) => (
               <option key={c} value={c}>
@@ -249,12 +249,12 @@ function EditTxnModal({
             ))}
           </select>
         </label>
-        <label className="block text-[12px] font-medium text-slate-600">
+        <label className="block text-[12px] font-medium text-slate-300">
           Merchant
           <input
             value={merchant}
             onChange={(e) => setMerchant(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-ink-200 px-3 py-2 text-[13px] font-normal outline-none focus:border-emerald-400"
+            className="mt-1 w-full rounded-lg border border-slate-800 px-3 py-2 text-[13px] font-normal outline-none focus:border-emerald-500"
           />
         </label>
       </div>

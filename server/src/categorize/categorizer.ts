@@ -9,6 +9,8 @@ export interface Rule {
 export const DEFAULT_RULES: Rule[] = [
   // payments / credits (checked first via txn type too)
   { pattern: 'PAYMENT RECEIVED', category: 'payments', priority: 1 },
+  { pattern: 'PAYMENT RECD', category: 'payments', priority: 1 },
+  { pattern: 'AUTODEBIT PAYMENT', category: 'payments', priority: 1 },
   { pattern: 'PAYMENT THANK YOU', category: 'payments', priority: 1 },
   { pattern: 'CARD PAYMENT', category: 'payments', priority: 2 },
   { pattern: 'CREDIT CARD PAY', category: 'payments', priority: 2 },
@@ -115,6 +117,8 @@ export const DEFAULT_RULES: Rule[] = [
   { pattern: 'HOTEL', category: 'travel', priority: 22 },
   { pattern: 'RESORT', category: 'travel', priority: 22 },
   { pattern: 'THOMAS COOK', category: 'travel', priority: 10 },
+  { pattern: 'FERRIES', category: 'travel', priority: 10 },
+  { pattern: 'FERRY', category: 'travel', priority: 11 },
 
   // flights
   { pattern: 'INDIGO', category: 'flights', priority: 8 },
@@ -191,6 +195,7 @@ export const DEFAULT_RULES: Rule[] = [
   { pattern: 'LIFESTYLE', category: 'offline_shopping', priority: 14 },
   { pattern: 'MAX FASHION', category: 'offline_shopping', priority: 10 },
   { pattern: 'VIJAY SALES', category: 'offline_shopping', priority: 10 },
+  { pattern: 'RELIANCE RETAIL', category: 'offline_shopping', priority: 10 },
   { pattern: 'PUMA', category: 'offline_shopping', priority: 10 },
   { pattern: 'ADIDAS', category: 'offline_shopping', priority: 10 },
   { pattern: 'ZARA', category: 'offline_shopping', priority: 10 },
@@ -269,6 +274,8 @@ export function detectTxnType(description: string): TxnType {
   if (
     has(
       'PAYMENT RECEIVED',
+      'PAYMENT RECD',
+      'AUTODEBIT PAYMENT',
       'PAYMENT THANK YOU',
       'NET BANKING',
       'NETBANKING',

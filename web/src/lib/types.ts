@@ -66,8 +66,13 @@ export interface BenefitProgress {
   code: string;
   name: string;
   category: string;
+  description: string | null;
   rewardType: string;
+  rewardValue: number | null;
   calcMethod: string;
+  includeAll: boolean;
+  eligibleCategories: string[];
+  excludedCategories: string[];
   period: { type: string; start: string; end: string; label: string; nextReset: string; basedOnAnniversary: boolean };
   eligibleSpend: number;
   threshold: number;

@@ -68,3 +68,54 @@ test('reports no transactions for empty text', () => {
   assert.equal(r.transactions.length, 0);
   assert.ok(r.warnings.length > 0);
 });
+
+const ICICI_DOUBLED = `ICICI Bank Credit Card Statement
+Statement Period: September 16, 2026 to October 15, 2026
+
+Date Date SerNo. SerNo. Transaction Details Transaction Details Reward Points Reward Points International Amount International Amount Amount (in Amount (in\`) \` )
+03/10/2026 03/10/2026 14280564039 14280564039 Autodebit Payment Recd. Autodebit Payment Recd. 0 0 R,VTS.AA 1276.67 CR CR
+27/09/2026 27/09/2026 14280560001 14280560001 PTMRELIANCE RETAIL L NOIDA IN PTMRELIANCE RETAIL L NOIDA IN 8 8 715.83 YVZ.AA
+01/10/2026 01/10/2026 14280563377 14280563377 PNBM2M FERRIES PRIVAT Mumbai IN PNBM2M FERRIES PRIVAT Mumbai IN 90 90 U,VAA.AA 3750.00
+06/10/2026 06/10/2026 14280564966 14280564966 WWWWORKHUMANCOM DUBLIN IE* WWWWORKHUMANCOM DUBLIN IE* 46 46 12 USD 12 USD R,SAT.UY 1002.90
+0000XXXXXXXX5314 0000XXXXXXXX5314
+Total 6,562.48`;
+
+test('parses ICICI doubled-text rows with trailing CR CR', () => {
+  const r = parseStatementText(ICICI_DOUBLED);
+  const payment = r.transactions.find((t) => t.description.includes('Autodebit Payment Recd.'));
+  assert.ok(payment, 'autodebit payment row should be parsed');
+  assert.equal(payment!.amount, 1276.67);
+  assert.equal(payment!.direction, 'credit');
+  assert.equal(payment!.date, '2026-10-03');
+});
+
+test('parses ICICI rows with a trailing reward code after the amount', () => {
+  const r = parseStatementText(ICICI_DOUBLED);
+  const retail = r.transactions.find((t) => t.description.includes('RELIANCE RETAIL'));
+  assert.ok(retail, 'row ending in "715.83 YVZ.AA" should be parsed');
+  assert.equal(retail!.amount, 715.83);
+  assert.equal(retail!.direction, 'debit');
+  assert.equal(retail!.date, '2026-09-27');
+});
+
+test('does not create a phantom transaction from the payment due date line', () => {
+  const text = `November 2, 2026 Scan to Pay using any UPI Application
+Statement Summary
+Total Amount due Previous Balance 6,562.48
+Minimum Amount due 380.00`;
+  const r = parseStatementText(text);
+  assert.equal(r.transactions.length, 0, JSON.stringify(r.transactions));
+});
+
+test('a pending transaction still dies when summary lines never provide an amount', () => {
+  const text = `01/10/2026 SOME WRAPPED DESCRIPTION FIRST LINE
+second continuation line
+third continuation line
+fourth continuation line
+fifth continuation line
+sixth continuation line
+seventh continuation line
+eighth continuation line`;
+  const r = parseStatementText(text);
+  assert.equal(r.transactions.length, 0, JSON.stringify(r.transactions));
+});

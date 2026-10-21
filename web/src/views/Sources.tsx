@@ -60,15 +60,15 @@ export function SourcesView({ version, onChanged }: { version: number; onChanged
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h1 className="text-[20px] font-semibold tracking-tight text-slate-900">Data Sources & Settings</h1>
-          <p className="text-[13px] text-slate-500">Where benefit data comes from, its freshness, and privacy posture.</p>
+          <h1 className="text-[20px] font-semibold tracking-tight text-slate-100">Data Sources & Settings</h1>
+          <p className="text-[13px] text-slate-400">Where benefit data comes from, its freshness, and privacy posture.</p>
         </div>
         <Button variant="secondary" onClick={checkAll} disabled={busy}>
           {busy ? 'Checking…' : 'Re-check sources'}
         </Button>
       </div>
 
-      {result && <div className="rounded-lg bg-slate-100 px-3 py-2 text-[12.5px] text-slate-600">{result}</div>}
+      {result && <div className="rounded-lg bg-slate-800 px-3 py-2 text-[12.5px] text-slate-300">{result}</div>}
 
       <Panel>
         <SectionTitle sub="Every benefit in the catalogue points to an official issuer page. Status reflects the last reachability check.">
@@ -76,13 +76,13 @@ export function SourcesView({ version, onChanged }: { version: number; onChanged
         </SectionTitle>
         <div className="space-y-2">
           {sources.map((s) => (
-            <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-ink-200 px-3.5 py-2.5">
+            <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-800 px-3.5 py-2.5">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-[13px] font-medium text-slate-800">{s.name}</span>
+                  <span className="text-[13px] font-medium text-slate-200">{s.name}</span>
                   <Pill tone="neutral">{s.kind}</Pill>
                 </div>
-                <a href={s.url} target="_blank" rel="noreferrer" className="text-[11.5px] text-slate-400 hover:text-emerald-600 hover:underline">
+                <a href={s.url} target="_blank" rel="noreferrer" className="text-[11.5px] text-slate-400 hover:text-emerald-300 hover:underline">
                   {s.url}
                 </a>
               </div>
@@ -105,12 +105,12 @@ export function SourcesView({ version, onChanged }: { version: number; onChanged
           </span>
         </SectionTitle>
         {ca && (
-          <div className="space-y-2 text-[12.5px] text-slate-600">
+          <div className="space-y-2 text-[12.5px] text-slate-300">
             <div className="flex items-center gap-2">
               <span>Availability</span>
               <Pill tone="red">{ca.availability}</Pill>
             </div>
-            <div className="rounded-lg bg-amber-50 px-3 py-2 text-amber-700">{ca.note}</div>
+            <div className="rounded-lg bg-amber-500/10 px-3 py-2 text-amber-300">{ca.note}</div>
             <div className="grid gap-1 text-[11.5px] text-slate-400">
               <span>Data: {ca.url}</span>
               <span>OpenAPI: {ca.openapi}</span>
@@ -123,7 +123,7 @@ export function SourcesView({ version, onChanged }: { version: number; onChanged
       <div className="grid gap-3 md:grid-cols-2">
         <Panel>
           <SectionTitle>Privacy</SectionTitle>
-          <ul className="space-y-1.5 text-[12.5px] text-slate-600">
+          <ul className="space-y-1.5 text-[12.5px] text-slate-300">
             <li>• All statement parsing runs locally on this machine.</li>
             <li>• No bank credentials are ever requested or stored.</li>
             <li>• Data lives in a local SQLite file, not a remote server.</li>
@@ -132,7 +132,7 @@ export function SourcesView({ version, onChanged }: { version: number; onChanged
         </Panel>
         <Panel>
           <SectionTitle>Accuracy</SectionTitle>
-          <ul className="space-y-1.5 text-[12.5px] text-slate-600">
+          <ul className="space-y-1.5 text-[12.5px] text-slate-300">
             <li>• Tracked spend comes only from statements you upload.</li>
             <li>• Reward points are shown as points; a rupee value is shown only when a trusted conversion exists.</li>
             <li>• Merchant-specific offers (e.g. “select merchants”) are approximated by category and flagged as such.</li>

@@ -17,7 +17,10 @@ export const CARDADVISOR_ATTRIBUTION = 'CardAdvisor — India Credit Card Facts 
 export interface CardAdvisorReward {
   category: string;
   rewardType: string;
+  /** Effective return in percent (e.g. 0.5 = 0.5%). */
   ratePct: number | null;
+  /** Stated view only: points earned per rupee of spend (e.g. 0.02 = 2 points per ₹100). */
+  rewardRate?: number | null;
   monthlyCapRs: number | null;
   pointValuePaisa: number | null;
   merchants: string | null;
@@ -25,6 +28,12 @@ export interface CardAdvisorReward {
 
 export interface CardAdvisorPerk {
   perkType: string;
+  /** Stated view only: structured spend gate when CardAdvisor has one. */
+  spendThresholdRs?: number | null;
+  domestic?: boolean;
+  international?: boolean;
+  visitsPerQuarter?: number | null;
+  description?: string;
 }
 
 export interface CardAdvisorCard {
@@ -94,9 +103,39 @@ export async function fetchMeta(base = config.cardadvisor.apiBase): Promise<Card
   return raw.data;
 }
 
+export interface CardAdvisorStatedFees {
+  joiningFeeRs?: number | null;
+  annualFeeRs?: number | null;
+  feeWaiverSpendRs?: number | null;
+  lifetimeFree?: boolean;
+  forexMarkupPct?: number | null;
+  aprMonthlyPct?: number | null;
+  [key: string]: unknown;
+}
+
+export interface CardAdvisorStatedReward extends CardAdvisorReward {
+  note?: string | null;
+}
+
+export interface CardAdvisorStatedCard {
+  cardKey: string;
+  name: string;
+  issuer: string;
+  network: string | null;
+  tier: string | null;
+  fees?: CardAdvisorStatedFees;
+  eligibility?: Record<string, unknown>;
+  rewards?: CardAdvisorStatedReward[];
+  excludedCategories?: string[];
+  perks: CardAdvisorPerk[];
+  lastVerified?: string | null;
+  url?: string;
+  [key: string]: unknown;
+}
+
 /** Fetch a single card's facts (or stated view when a key is configured). */
-export async function fetchCard(cardKey: string, base = config.cardadvisor.apiBase): Promise<CardAdvisorCard> {
-  const raw = await fetchJson<{ success: boolean; data: { view: string; card: CardAdvisorCard } }>(
+export async function fetchCard(cardKey: string, base = config.cardadvisor.apiBase): Promise<CardAdvisorStatedCard> {
+  const raw = await fetchJson<{ success: boolean; data: { view: string; card: CardAdvisorStatedCard } }>(
     `${base}/cards/${encodeURIComponent(cardKey)}`,
   );
   if (!raw?.data?.card) throw new Error(`CardAdvisor /cards/${cardKey} returned no card`);

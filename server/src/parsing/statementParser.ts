@@ -70,7 +70,9 @@ export function parseDateToken(s: string): string | null {
 
 const DATE_AT_START = /^(\d{1,2}[/\-.]\d{1,2}[/\-.]\d{2,4}|\d{1,2}[\s\-]+[A-Za-z]{3,9}[\s\-,]+\d{2,4}|[A-Za-z]{3,9}[\s\-]+\d{1,2}[\s\-,]+\d{2,4})\b/;
 
-const AMOUNT_AT_END = /([\d][\d,]{0,15}\.\d{2})\s*(cr|dr)?\s*[)]?$/i;
+// Tolerates layouts (e.g. ICICI) where the amount is followed by a repeated
+// CR/DR token or a short reward-category code such as "YVZ.AA".
+const AMOUNT_AT_END = /([\d][\d,]{0,15}\.\d{2})\s*(?:cr|dr)?(?:\s+(?:cr|dr))?(?:\s+[A-Z0-9][A-Z0-9,*.'-]{1,12})*\s*$/i;
 
 function findDateAtStart(line: string): { date: string; rest: string } | null {
   const m = DATE_AT_START.exec(line.trim());
@@ -78,6 +80,50 @@ function findDateAtStart(line: string): { date: string; rest: string } | null {
   const dt = parseDateToken(m[1]!);
   if (!dt) return null;
   return { date: dt, rest: line.trim().slice(m[1]!.length).trim() };
+}
+
+// Some PDFs (e.g. ICICI) render every text run twice, so each line looks like
+// "03/10/2026 03/10/2026 14280564039 14280564039 Autodebit Payment Recd. ... CR CR".
+// Collapse adjacent duplicated token runs back to a single copy.
+function collapseDoubledRuns(s: string): string {
+  const tokens = s.trim().split(/\s+/).filter(Boolean);
+  const out: string[] = [];
+  let i = 0;
+  while (i < tokens.length) {
+    let run = 0;
+    for (let len = Math.floor((tokens.length - i) / 2); len >= 1; len--) {
+      let same = true;
+      for (let k = 0; k < len; k++) {
+        if (tokens[i + k] !== tokens[i + len + k]) {
+          same = false;
+          break;
+        }
+      }
+      if (same) {
+        run = len;
+        break;
+      }
+    }
+    if (run > 0) {
+      for (let k = 0; k < run; k++) out.push(tokens[i + k]!);
+      i += run * 2;
+    } else {
+      out.push(tokens[i]!);
+      i++;
+    }
+  }
+  return out.join(' ');
+}
+
+// Leading transaction serial numbers and reward-category codes are not part
+// of the merchant description (ICICI puts them in the same text flow).
+function cleanDescription(s: string): string {
+  return s
+    .replace(/^\d{7,}\s+/, '')
+    .replace(/\b[A-Z],[A-Z]{3}\.[A-Z]{2}\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/^[\s|:-]+/, '')
+    .replace(/[\s|]+$/, '');
 }
 
 function findAmountAtEnd(line: string): { amount: number; direction: 'debit' | 'credit' | null; rest: string } | null {
@@ -99,7 +145,7 @@ interface Pending {
   direction: 'debit' | 'credit' | null;
 }
 
-const PAYMENT_MARKERS = ['PAYMENT RECEIVED', 'PAYMENT THANK YOU', 'NET BANKING', 'NETBANKING', 'AUTOPAY', 'MANDATE', 'BANK CREDIT'];
+const PAYMENT_MARKERS = ['PAYMENT RECEIVED', 'PAYMENT THANK YOU', 'NET BANKING', 'NETBANKING', 'AUTOPAY', 'MANDATE', 'BANK CREDIT', 'AUTODEBIT PAYMENT', 'PAYMENT RECD'];
 
 function inferDirection(description: string, explicit: 'debit' | 'credit' | null): 'debit' | 'credit' {
   if (explicit) return explicit;
@@ -109,7 +155,10 @@ function inferDirection(description: string, explicit: 'debit' | 'credit' | null
 }
 
 export function parseStatementText(text: string): ParseResult {
-  const lines = text.split(/\r?\n/);
+  const lines = text
+    .split(/\r?\n/)
+    .map((l) => collapseDoubledRuns(l.trim()))
+    .filter((l) => l.length > 0);
   const warnings: string[] = [];
   const transactions: ParsedTxn[] = [];
 
@@ -121,7 +170,7 @@ export function parseStatementText(text: string): ParseResult {
   let periodEnd: string | null = null;
 
   // Header extraction
-  const flat = text.replace(/\s+/g, ' ');
+  const flat = lines.join(' ');
   const DATE_TOKEN = String.raw`(\d{1,2}[/\-.]\d{1,2}[/\-.]\d{2,4}|\d{1,2}[\s\-]+[A-Za-z]{3,9}[\s\-,]+\d{2,4})`;
   const periodRe = new RegExp(
     String.raw`(?:statement|billing)\s*(?:period|cycle)\s*[:\-]?\s*${DATE_TOKEN}\s*(?:to|through|-|–|—)\s*${DATE_TOKEN}`,
@@ -137,11 +186,12 @@ export function parseStatementText(text: string): ParseResult {
   if (stmtM) statementDate = parseDateToken(stmtM[1]!.trim()) ?? null;
 
   let pending: Pending | null = null;
+  let pendingLines = 0;
 
   const flush = () => {
     if (!pending) return;
     if (pending.amount !== null) {
-      const description = pending.parts.join(' ').replace(/\s+/g, ' ').trim();
+      const description = cleanDescription(pending.parts.join(' '));
       const raw = pending.rawParts.join(' ').replace(/\s+/g, ' ').trim();
       const direction = inferDirection(description, pending.direction);
       const txnWarnings: string[] = [];
@@ -160,10 +210,7 @@ export function parseStatementText(text: string): ParseResult {
     pending = null;
   };
 
-  for (const rawLine of lines) {
-    const line = rawLine.trim();
-    if (!line) continue;
-
+  for (const line of lines) {
     const hasAmountToken = AMOUNT_AT_END.test(line);
     if (hasAmountToken) candidateLines++;
 
@@ -172,8 +219,14 @@ export function parseStatementText(text: string): ParseResult {
 
     if (dateStart && amountEnd) {
       flush();
-      const withoutDate = findDateAtStart(amountEnd.rest)?.rest ?? amountEnd.rest;
-      const description = withoutDate.replace(/^[\s|:-]+/, '').replace(/[\s|]+$/, '');
+      // Doubled-text PDFs repeat the date; strip it as many times as it appears.
+      let withoutDate = amountEnd.rest;
+      for (let i = 0; i < 3; i++) {
+        const d = findDateAtStart(withoutDate);
+        if (!d) break;
+        withoutDate = d.rest;
+      }
+      const description = cleanDescription(withoutDate);
       transactions.push({
         date: dateStart.date,
         description,
@@ -189,6 +242,7 @@ export function parseStatementText(text: string): ParseResult {
 
     if (dateStart && !amountEnd) {
       flush();
+      pendingLines = 0;
       pending = {
         date: dateStart.date,
         parts: dateStart.rest ? [dateStart.rest] : [],
@@ -209,8 +263,15 @@ export function parseStatementText(text: string): ParseResult {
         flush();
         continue;
       }
-      // Continuation line: stop if it looks like a section header or footer
-      if (/^(total|sub\s*total|minimum|amount due|payment due|reward|closing)/i.test(line)) {
+      // A summary/footer line means any open pending was never a transaction
+      // (e.g. a payment-due-date line like "November 2, 2026 Scan to Pay...").
+      if (/^(total|sub\s*total|minimum|amount due|payment due|due date|reward|closing|statement|balance|outstanding|availab)/i.test(line)) {
+        pending = null;
+        continue;
+      }
+      // Too many continuation lines without an amount: it is not a wrapped transaction.
+      if (++pendingLines > 6) {
+        pending = null;
         continue;
       }
       pending.parts.push(line);

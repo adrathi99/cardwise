@@ -114,14 +114,14 @@ export function UploadModal({
   return (
     <Modal open={open} onClose={close} title="Upload statement PDF" width="max-w-3xl">
       {cards.length === 0 ? (
-        <div className="py-6 text-center text-[13px] text-slate-500">Add a card first, then upload its statements.</div>
+        <div className="py-6 text-center text-[13px] text-slate-400">Add a card first, then upload its statements.</div>
       ) : locked ? (
         <div className="space-y-4">
-          <div className="rounded-lg bg-amber-50 px-3 py-2 text-[12.5px] text-amber-800">
+          <div className="rounded-lg bg-amber-500/10 px-3 py-2 text-[12.5px] text-amber-200">
             <span className="font-medium">{locked.file.name}</span> is password-protected. Enter its password to continue.
             Statement passwords are usually your date of birth (DDMMYYYY) or PAN.
           </div>
-          <label className="block text-[12px] font-medium text-slate-600">
+          <label className="block text-[12px] font-medium text-slate-300">
             PDF password
             <input
               type="password"
@@ -134,11 +134,11 @@ export function UploadModal({
                   void start(locked.files, activeCard, password);
                 }
               }}
-              className="mt-1 w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-[13px] font-normal outline-none focus:border-emerald-400"
+              className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-[13px] font-normal outline-none focus:border-emerald-500"
               placeholder="Password for this PDF"
             />
           </label>
-          {err && <div className="rounded-lg bg-red-50 px-3 py-2 text-[12.5px] text-red-700">{err}</div>}
+          {err && <div className="rounded-lg bg-red-500/10 px-3 py-2 text-[12.5px] text-red-300">{err}</div>}
           <div className="flex justify-end gap-2">
             <Button
               variant="secondary"
@@ -166,12 +166,12 @@ export function UploadModal({
         </div>
       ) : !pending ? (
         <div className="space-y-4">
-          <label className="block text-[12px] font-medium text-slate-600">
+          <label className="block text-[12px] font-medium text-slate-300">
             Which card is this statement for?
             <select
               value={activeCard ?? ''}
               onChange={(e) => setCardId(Number(e.target.value))}
-              className="mt-1 w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-[13px] font-normal outline-none focus:border-emerald-400"
+              className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-[13px] font-normal outline-none focus:border-emerald-500"
             >
               {cards.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -183,7 +183,7 @@ export function UploadModal({
           </label>
 
           <div
-            className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-ink-200 bg-slate-50/60 px-6 py-10 text-center hover:border-emerald-300 hover:bg-emerald-50/40"
+            className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-800 bg-slate-800/30 px-6 py-10 text-center hover:border-emerald-500/60 hover:bg-emerald-500/10"
             onClick={() => inputRef.current?.click()}
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => {
@@ -192,8 +192,8 @@ export function UploadModal({
               if (files.length && activeCard) void start(files, activeCard);
             }}
           >
-            <div className="text-[14px] font-medium text-slate-700">Drop PDF statements here</div>
-            <div className="mt-1 text-[12.5px] text-slate-500">or click to browse. One or many files at once.</div>
+            <div className="text-[14px] font-medium text-slate-200">Drop PDF statements here</div>
+            <div className="mt-1 text-[12.5px] text-slate-400">or click to browse. One or many files at once.</div>
             <input
               ref={inputRef}
               type="file"
@@ -207,22 +207,22 @@ export function UploadModal({
             />
           </div>
 
-          <div className="rounded-lg bg-slate-50 px-3 py-2 text-[12px] text-slate-600">
+          <div className="rounded-lg bg-slate-800/50 px-3 py-2 text-[12px] text-slate-300">
             Nothing is saved until you review the parsed rows and press <span className="font-medium">Import</span>. Duplicate rows are detected
             automatically across statements.
           </div>
 
-          {progress && <div className="text-[12.5px] text-slate-500">{progress}</div>}
+          {progress && <div className="text-[12.5px] text-slate-400">{progress}</div>}
           {done.length > 0 && (
             <div className="space-y-1">
               {done.map((d) => (
-                <div key={d.file} className="flex items-center gap-2 text-[12.5px] text-emerald-700">
+                <div key={d.file} className="flex items-center gap-2 text-[12.5px] text-emerald-300">
                   <span>✓</span> Imported {d.count} transactions from {d.file}
                 </div>
               ))}
             </div>
           )}
-          {err && <div className="rounded-lg bg-red-50 px-3 py-2 text-[12.5px] text-red-700">{err}</div>}
+          {err && <div className="rounded-lg bg-red-500/10 px-3 py-2 text-[12.5px] text-red-300">{err}</div>}
         </div>
       ) : (
         <div className="space-y-3">
@@ -238,21 +238,21 @@ export function UploadModal({
             {pending.likelyScanned && <Pill tone="red">Looks like a scanned PDF</Pill>}
           </div>
 
-          <div className="text-[12.5px] text-slate-500">
+          <div className="text-[12.5px] text-slate-400">
             {pending.fileName} · period {shortDate(pending.periodStart)} → {shortDate(pending.periodEnd)}
           </div>
 
           {pending.warnings.length > 0 && (
-            <div className="rounded-lg bg-amber-50 px-3 py-2 text-[12px] text-amber-700">
+            <div className="rounded-lg bg-amber-500/10 px-3 py-2 text-[12px] text-amber-300">
               {pending.warnings.map((w, i) => (
                 <div key={i}>• {w}</div>
               ))}
             </div>
           )}
 
-          <div className="max-h-72 overflow-y-auto rounded-xl border border-ink-200">
+          <div className="max-h-72 overflow-y-auto rounded-xl border border-slate-800">
             <table className="w-full text-left text-[12.5px]">
-              <thead className="sticky top-0 bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500">
+              <thead className="sticky top-0 bg-slate-800/50 text-[11px] uppercase tracking-wide text-slate-400">
                 <tr>
                   <th className="px-3 py-2 font-medium">Date</th>
                   <th className="px-3 py-2 font-medium">Description</th>
@@ -262,14 +262,14 @@ export function UploadModal({
               </thead>
               <tbody>
                 {pending.transactions.map((t, i) => (
-                  <tr key={i} className={`border-t border-ink-100 ${t.isDuplicate ? 'opacity-40' : ''}`}>
-                    <td className="whitespace-nowrap px-3 py-1.5 tabnum text-slate-500">{shortDate(t.txn_date)}</td>
-                    <td className="max-w-[280px] truncate px-3 py-1.5 text-slate-800" title={t.description}>
+                  <tr key={i} className={`border-t border-slate-800 ${t.isDuplicate ? 'opacity-40' : ''}`}>
+                    <td className="whitespace-nowrap px-3 py-1.5 tabnum text-slate-400">{shortDate(t.txn_date)}</td>
+                    <td className="max-w-[280px] truncate px-3 py-1.5 text-slate-200" title={t.description}>
                       {t.description}
-                      {t.isDuplicate && <span className="ml-2 text-[11px] text-amber-600">duplicate</span>}
+                      {t.isDuplicate && <span className="ml-2 text-[11px] text-amber-400">duplicate</span>}
                     </td>
-                    <td className="px-3 py-1.5 text-slate-500">{titleCase(t.category)}</td>
-                    <td className={`whitespace-nowrap px-3 py-1.5 text-right tabnum ${t.direction === 'credit' ? 'text-emerald-600' : 'text-slate-800'}`}>
+                    <td className="px-3 py-1.5 text-slate-400">{titleCase(t.category)}</td>
+                    <td className={`whitespace-nowrap px-3 py-1.5 text-right tabnum ${t.direction === 'credit' ? 'text-emerald-400' : 'text-slate-200'}`}>
                       {t.direction === 'credit' ? '+' : '−'}
                       {inr(t.amount)}
                     </td>
@@ -279,7 +279,7 @@ export function UploadModal({
             </table>
           </div>
 
-          {err && <div className="rounded-lg bg-red-50 px-3 py-2 text-[12.5px] text-red-700">{err}</div>}
+          {err && <div className="rounded-lg bg-red-500/10 px-3 py-2 text-[12.5px] text-red-300">{err}</div>}
 
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="secondary" onClick={discard} disabled={busy}>

@@ -61,8 +61,13 @@ export interface BenefitProgress {
   code: string;
   name: string;
   category: string;
+  description: string | null;
   rewardType: string;
+  rewardValue: number | null;
   calcMethod: string;
+  includeAll: boolean;
+  eligibleCategories: string[];
+  excludedCategories: string[];
   period: { type: PeriodType; start: string; end: string; label: string; nextReset: string; basedOnAnniversary: boolean };
   eligibleSpend: number;
   threshold: number;
@@ -172,13 +177,25 @@ export function evaluateBenefit(
   switch (benefit.calc_method) {
     case 'milestone':
     case 'voucher_tier': {
-      earnedValue = metThreshold ? (benefit.reward_value ?? 0) : 0;
-      attainableValue = benefit.reward_value ?? 0;
-      explanation.push(
-        metThreshold
-          ? `Milestone reached at ₹${threshold.toFixed(0)}; reward of ₹${(benefit.reward_value ?? 0).toFixed(0)} unlocked.`
-          : `Needs ₹${(threshold - eligibleSpend).toFixed(0)} more eligible spend to reach the ₹${threshold.toFixed(0)} milestone.`,
-      );
+      const reward = benefit.reward_value;
+      if (reward == null) {
+        earnedValue = null;
+        attainableValue = null;
+        valueIsKnown = false;
+        explanation.push(
+          metThreshold
+            ? `Threshold of ₹${threshold.toFixed(0)} met; the reward is described in the card terms.`
+            : `Needs ₹${(threshold - eligibleSpend).toFixed(0)} more eligible spend to reach the ₹${threshold.toFixed(0)} milestone.`,
+        );
+      } else {
+        earnedValue = metThreshold ? reward : 0;
+        attainableValue = reward;
+        explanation.push(
+          metThreshold
+            ? `Milestone reached at ₹${threshold.toFixed(0)}; reward of ₹${reward.toFixed(0)} unlocked.`
+            : `Needs ₹${(threshold - eligibleSpend).toFixed(0)} more eligible spend to reach the ₹${threshold.toFixed(0)} milestone.`,
+        );
+      }
       status = metThreshold ? 'earned' : eligibleSpend > 0 ? 'in_progress' : 'not_started';
       break;
     }
@@ -211,11 +228,19 @@ export function evaluateBenefit(
     }
     case 'percentage_capped': {
       const rate = benefit.reward_value ?? 0;
-      ratePercent = rate;
-      const raw = (eligibleSpend * rate) / 100;
-      earnedValue = round2(cap != null ? Math.min(raw, cap) : raw);
-      attainableValue = cap;
-      explanation.push(`Value at ${rate}% on eligible spend${cap != null ? `, capped at ₹${cap.toFixed(0)}` : ''}.`);
+      if (rate > 0) {
+        ratePercent = rate;
+        const raw = (eligibleSpend * rate) / 100;
+        earnedValue = round2(cap != null ? Math.min(raw, cap) : raw);
+        attainableValue = cap;
+        explanation.push(`Value at ${rate}% on eligible spend${cap != null ? `, capped at ₹${cap.toFixed(0)}` : ''}.`);
+      } else {
+        // Typical perk: the value is qualitative (visits, vouchers), so there is
+        // no rupee figure to compute on eligible spend.
+        earnedValue = null;
+        attainableValue = null;
+        valueIsKnown = false;
+      }
       status = metThreshold ? 'earned' : eligibleSpend > 0 ? 'in_progress' : 'not_started';
       break;
     }
@@ -255,8 +280,13 @@ export function evaluateBenefit(
     code: benefit.code,
     name: benefit.name,
     category: benefit.category,
+    description: benefit.description,
     rewardType: benefit.reward_type,
+    rewardValue: benefit.reward_value,
     calcMethod: benefit.calc_method,
+    includeAll: useAll,
+    eligibleCategories: eligible,
+    excludedCategories: excluded,
     period: { type: period.periodType, start: period.start, end: period.end, label: period.label, nextReset: period.nextReset, basedOnAnniversary: period.basedOnAnniversary },
     eligibleSpend,
     threshold,
